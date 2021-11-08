@@ -47,7 +47,10 @@ board = [[[1, '.', "WWOW"], [2, '.', "OWOW"], [3, '.', "OWOO"], [4, '.', "OWWO"]
         [[13, '.', "WOOW"], [14, '.', "OWOW"], [15, '.', "OWOW"], [16, '.', "OOWW"]]]
        
 # change this var to change starting cell, then move robot to specified cell
-currentCell = 15
+# currentCell = 15
+currentCell = 0
+
+numParticles = 80
 
 def mToIn(m):
     return m * 39.3701
@@ -71,6 +74,12 @@ def turn90(turn):
     rightMotor.setVelocity(0)
     leftMotor.setVelocity(0) 
 
+def rotateToStartingAngle(x):
+    while robot.step(timestep) != -1 and (not (getAngle() < x + 1 and getAngle() > x - 1)):
+        leftMotor.setVelocity(2)
+        rightMotor.setVelocity(-2)
+    leftMotor.setVelocity(0)
+    rightMotor.setVelocity(0)
 
 def direction():
     if(getAngle() >= 0 and getAngle() < 5):
@@ -94,13 +103,62 @@ def complete():
        if(not isVisited(i)):
            return False
     return True 
+
+# this function will deal with most of the 
+def distrubuteParticles():
+    pass
+    
+def getWallConfig(s):
+    if (mToIn(frontDistanceSensor.getValue()) <= 5):
+        s += 'W'
+    else:
+        s += 'O'
+        
+    return s
+    
+def getCell():
+    starting_angle = getAngle()
+    while robot.step(timestep) != -1 and direction() != 'w':
+        leftMotor.setVelocity(-2)
+        rightMotor.setVelocity(2)
+    leftMotor.setVelocity(0)
+    rightMotor.setVelocity(0)
+    
+    wall_config = ""
+    wall_config = getWallConfig(wall_config)
+    turn90('r')
+    wall_config = getWallConfig(wall_config)
+    turn90('r')
+    wall_config = getWallConfig(wall_config)
+    turn90('r')
+    wall_config = getWallConfig(wall_config)
+    turn90('r')
+    
+    rotateToStartingAngle(starting_angle)
+    
+    print(wall_config)
+    for i in board:
+        for j in i:
+            if (j[2] == wall_config):
+                currentCell = j[0]
+        
+def getRobotCoordinates():
+    coordinates = [[[-15, 15], [-5, 15], [5, 15], [15, 15]], 
+                    [[-15, 5], [-5, 5], [5, 5], [15, 5]], 
+                    [[-15, -5], [-5, -5], [5, -5], [15, -5]], 
+                    [[-15, -15], [-5, -15], [5, -15], [15, -15]]]
+    for i in range(4):
+        for j in range(4):
+            if (board[i][j][0] == currentCell):
+                return coordinates[i][j][0], coordinates[i][i][1]
            
 def printPose():
-    cell = currentCell 
+    # cell = getCell() 
     x, y = getRobotCoordinates()
     orientation = round(imu.getRollPitchYaw()[2], 5)
-    print('(' + str(x) + ', ' + str(y) + ', ' + str(cell) + ', ' + str(orientation) + ')')
-    
+    getCell()
+    # print('(' + str(x) + ', ' + str(y) + ', ' + str(cell) + ', ' + str(orientation) + ')')    
+
 def isVisited(cell):
     for i in range(4):
         for j in range(4):
@@ -120,8 +178,7 @@ def markVisited():
     print('-----------------------------------------------------------')
    
 def moveToNextCell():
-    global currentCell, currentX, currentY
-    
+    global currentCell
     
     if (direction() == 'w' and isVisited(currentCell - 1)):
         turn90('l')
@@ -154,21 +211,21 @@ starting_position = leftposition_sensor.getValue()
 start_time = robot.getTime()
 
 while robot.step(timestep) != -1 and robot.getTime() - start_time < 180:
-    # markVisited()
+    markVisited()
     # if(complete()):
         # break
     moveToNextCell()
     # if (currentCell == 1 or currentCell == 4 or currentCell == 13 or currentCell == 16):
-        if (currentCell == 1):
-            turn90('l')
-        elif(currentCell == 13):
-            turn90('l')
-        el:
-            turn90('l' if direction() == 'n' or direction() == 'e' else 'r')
+        # if (currentCell == 1):
+            # turn90('l')
+        # elif(currentCell == 13):
+            # turn90('l')
+        # el:
+            # turn90('l' if direction() == 'n' or direction() == 'e' else 'r')
         # turn90('l')
         
         # starting_position = leftposition_sensor.getValue()
-        continue
+        # continue
     # moveToNextCell()
 
 leftMotor.setVelocity(0)

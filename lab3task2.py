@@ -47,7 +47,7 @@ board = [[[1, '.'], [2, '.'], [3, '.'], [4, '.']],
         [[13, '.'], [14, '.'], [15, '.'], [16, '.']]]
        
 # change this var to change starting cell, then move robot to specified cell
-currentCell = 15
+currentCell = 13
 
 def mToIn(m):
     return m * 39.3701
@@ -219,13 +219,11 @@ while robot.step(timestep) != -1 and robot.getTime() - start_time < 180:
         break
     # moveToNextCell()
     if (currentCell == 1 or currentCell == 4 or currentCell == 13 or currentCell == 16):
-        # if (currentCell == 1):
-            # turn90('l')
-        # elif(currentCell == 13):
-            # turn90('l')
-        # el:
-            # turn90('l' if direction() == 'n' or direction() == 'e' else 'r')
-        turn90('l')
+        if(currentCell == 13 and direction() == 'e'):
+            moveToNextCell()
+            continue
+        else:
+            turn90('l')
         
         starting_position = leftposition_sensor.getValue()
         # continue
